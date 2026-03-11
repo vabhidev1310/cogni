@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COGNI &mdash; Architecture of Mind</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;700;800&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+    <div class="noise-overlay" aria-hidden="true"></div>
+    <div class="scan-lines" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="scroll-progress">
+        <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+    </div>
+
+    <div class="cursor-ring" id="cursorRing"></div>
+    <div class="cursor-dot d0" id="cd0"></div>
+    <div class="cursor-dot d1" id="cd1"></div>
+    <div class="cursor-dot d2" id="cd2"></div>
+    <div class="cursor-dot d3" id="cd3"></div>
+    <div class="cursor-dot d4" id="cd4"></div>
+    <div class="cursor-dot d5" id="cd5"></div>
+    <div class="cursor-dot d6" id="cd6"></div>
+    <div class="cursor-dot d7" id="cd7"></div>
+    <div class="cursor-dot d8" id="cd8"></div>
+    <div class="cursor-dot d9" id="cd9"></div>
+
+    <div id="sysToast" class="sys-toast"></div>
+    <button class="breath-fab" id="breathFab">breathe</button>
+
+    <!-- LOADER -->
+    <div class="loader-screen" id="loaderScreen">
+        <canvas id="loaderBurst"></canvas>
+        <div class="loader-inner">
+            <div class="loader-ring-outer">
+                <svg class="loader-ring-svg" viewBox="0 0 180 180">
+                    <circle cx="90" cy="90" r="88" />
+                </svg>
+                <svg class="loader-ring-svg2" viewBox="0 0 180 180">
+                    <circle cx="90" cy="90" r="80" />
+                </svg>
+                <div class="loader-num" id="loaderNum">00</div>
+            </div>
+            <div class="loader-bar-wrap">
+                <div class="loader-bar" id="loaderBar"></div>
+            </div>
+            <div class="loader-text" id="loaderText"></div>
+        </div>
+    </div>
+
+    <!-- BREATH OVERLAY -->
+    <div class="breath-overlay" id="breathOverlay">
+        <div class="breath-modal">
+            <button class="breath-close" id="breathClose">&#x2715;</button>
+            <div><span class="mono-tag">box breathing &middot; 4-4-4-4</span>
+                <h2 class="breath-title">Find Still<em>ness</em></h2>
+                <p class="breath-sub">Inhale &middot; Hold &middot; Exhale &middot; Hold</p>
+            </div>
+            <div class="breath-center">
+                <div class="breath-orb-modal" id="breathOrb">
+                    <div class="b-ring r1"></div>
+                    <div class="b-ring r2"></div>
+                    <div class="b-ring r3"></div>
+                    <span class="b-phase" id="breathPhase">Ready</span>
+                </div>
+                <div class="breath-count" id="breathCount">&mdash;</div>
+                <div class="breath-round">Round <span id="breathRound">0</span> of 5</div>
+            </div>
+            <button class="bs-btn" id="breathStartBtn"
+                style="padding:13px 44px;margin-top:6px"><span>Begin</span></button>
+            <p style="font-size:11px;color:var(--crd);font-family:var(--fm);font-style:italic;margin-top:8px">breathe
+                through your nose &middot; you are safe here</p>
+        </div>
+    </div>
+
+    <!-- POST-LOADER -->
+    <div class="post-loader" id="postLoader" style="display:none">
+        <div class="pl-content">
+            <div class="pl-orb"></div>
+            <div class="pl-text" id="plText">Aligning neural pathways...</div>
+            <div class="pl-sub" id="plSub">preparing your sanctuary</div>
+        </div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div class="onboard-overlay" id="onboardOverlay" style="display:none">
+        <div class="onboard-modal">
+            <div class="onboard-steps">
+                <div class="onboard-step active" id="ob0">
+                    <div class="ob-icon">&#x2736;</div>
+                    <h2 class="ob-title">Welcome to <em>COGNI</em></h2>
+                    <p class="ob-body">Your personal cognitive wellness engine. COGNI uses AI and evidence-based CBT to
+                        help you understand and reframe your thoughts.</p>
+                    <div class="ob-nav"><button class="ob-skip" id="obSkip">Skip</button><button class="ob-next"
+                            id="ob0Next">Next &rarr;</button></div>
+                </div>
+                <div class="onboard-step" id="ob1">
+                    <div class="ob-icon">&#x25C8;</div>
+                    <h2 class="ob-title">Type Your Thoughts</h2>
+                    <p class="ob-body">Share any thought weighing on you. The Neural Analysis engine identifies
+                        cognitive distortions and reframes them with warmth and clarity.</p>
+                    <div class="ob-nav"><button class="ob-back" id="ob1Back">&larr;</button><button class="ob-next"
+                            id="ob1Next">Next &rarr;</button></div>
+                </div>
+                <div class="onboard-step" id="ob2">
+                    <div class="ob-icon">&#x25CE;</div>
+                    <h2 class="ob-title">Track Your Patterns</h2>
+                    <p class="ob-body">Keep a mood journal and log daily habits. Over time, COGNI reveals your emotional
+                        patterns and helps build healthier mental routines.</p>
+                    <div class="ob-nav"><button class="ob-back" id="ob2Back">&larr;</button><button class="ob-next"
+                            id="ob2Next">Next &rarr;</button></div>
+                </div>
+                <div class="onboard-step" id="ob3">
+                    <div class="ob-icon">&#x2295;</div>
+                    <h2 class="ob-title">You Are Safe Here</h2>
+                    <p class="ob-body">All data stays on your device. COGNI is a self-reflection tool, not a substitute
+                        for professional care. Breathe. Begin.</p>
+                    <div class="ob-nav"><button class="ob-back" id="ob3Back">&larr;</button><button class="ob-finish"
+                            id="obFinish">Enter COGNI &rarr;</button></div>
+                </div>
+            </div>
+            <div class="ob-dots">
+                <span class="ob-dot active" data-step="0"></span><span class="ob-dot" data-step="1"></span>
+                <span class="ob-dot" data-step="2"></span><span class="ob-dot" data-step="3"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="profile-overlay" id="profileOverlay" style="display:none">
+        <div class="profile-modal">
+            <button class="profile-close" id="profileClose">&#x2715;</button>
+            <div class="profile-avatar" id="profileAvatar">A</div>
+            <div class="profile-name" id="profileName">Username</div>
+            <div class="profile-since" id="profileSince">Member since today</div>
+            <div class="profile-stats-row">
+                <div class="pstat"><span class="pstat-n" id="pTotalAnalyses">0</span><span
+                        class="pstat-l">Analyses</span></div>
+                <div class="pstat"><span class="pstat-n" id="pJournalCount">0</span><span class="pstat-l">Journal</span>
+                </div>
+                <div class="pstat"><span class="pstat-n" id="pStreak">0</span><span class="pstat-l">Streak</span></div>
+            </div>
+            <div class="profile-top-distortion" id="profileTopDist" style="display:none">
+                <span class="mono-tag">Most common pattern</span>
+                <div class="ptd-label" id="ptdLabel">&mdash;</div>
+            </div>
+            <div class="profile-actions">
+                <button class="bs-btn" id="profileThemeToggle" style="padding:9px 18px;font-size:9px"><span>&#x263D;
+                        Toggle Theme</span></button>
+                <button class="bs-btn" id="profileLogout"
+                    style="padding:9px 18px;font-size:9px;border-color:rgba(200,80,70,.3);color:rgba(210,120,100,.8)"><span>&#x21A9;
+                        Sign Out</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FORGOT PASSWORD -->
+    <div class="forgot-overlay" id="forgotOverlay" style="display:none">
+        <div class="forgot-modal">
+            <button class="forgot-close" id="forgotClose">&#x2715;</button>
+            <div class="ob-icon" style="font-size:28px;margin-bottom:14px">&#x1F33F;</div>
+            <h2 class="ob-title" style="margin-bottom:10px">Reset Password</h2>
+            <p class="ob-body" style="margin-bottom:22px;text-align:center">Enter your username and choose a new
+                password.</p>
+            <div class="lc-field" style="margin-bottom:14px">
+                <input class="lc-input" id="fpUser" type="text" placeholder=" " maxlength="30" />
+                <label class="lc-label">username</label>
+                <div class="lc-bar"></div>
+            </div>
+            <div class="lc-field" style="margin-bottom:14px">
+                <input class="lc-input" id="fpNew" type="password" placeholder=" " maxlength="60" />
+                <label class="lc-label">new password</label>
+                <div class="lc-bar"></div>
+            </div>
+            <div class="lc-field" style="margin-bottom:22px">
+                <input class="lc-input" id="fpConf" type="password" placeholder=" " maxlength="60" />
+                <label class="lc-label">confirm password</label>
+                <div class="lc-bar"></div>
+            </div>
+            <button class="ob-next" id="fpSubmit" style="width:100%;justify-content:center">Reset Password</button>
+            <div class="fp-msg" id="fpMsg"></div>
+        </div>
+    </div>
+
+    <!-- SPLASH -->
+    <section class="intro-splash" id="introSplash" style="display:none">
+        <canvas class="neural-canvas" id="neuralCanvas"></canvas>
+        <div class="splash-content">
+            <span class="splash-mark">&#x2736;</span>
+            <div class="splash-title" id="splashTitle">
+                <span class="splash-letter">C</span><span class="splash-letter">O</span><span
+                    class="splash-letter">G</span><span class="splash-letter">N</span><span
+                    class="splash-letter">I</span>
+            </div>
+            <p class="splash-sub" id="splashSub">cognitive wellness intelligence engine</p>
+            <div class="splash-rule" id="splashRule"></div>
+            <button class="splash-btn" id="splashEnterBtn">ENTER THE MIND</button>
+        </div>
+    </section>
+
+    <!-- LOGIN -->
+    <section class="login-wrap" id="loginSection" style="display:none">
+        <canvas id="loginCanvas"></canvas>
+        <div class="login-card tilt-card" id="loginCard">
+            <div class="tilt-card-inner">
+                <div class="auth-error-overlay" id="authErrorOverlay">
+                    <div class="ae-content">
+                        <span class="ae-icon">&#x1F33F;</span>
+                        <h3 class="ae-title" id="aeTitle">Take a <em>breath.</em></h3>
+                        <p class="ae-msg" id="aeMsg">Those credentials didn't match. Try again when you're ready.</p>
+                        <button class="magnetic-btn" id="aeBackBtn">TAKE ME BACK</button>
+                    </div>
+                </div>
+                <div class="lc-brand"><span class="lc-mark">&#x2736;</span><span class="lc-name">COGNI</span></div>
+                <div class="auth-tabs" id="authTabs">
+                    <button class="auth-tab active" id="tabSignIn">Sign In</button>
+                    <button class="auth-tab" id="tabCreate">Create Account</button>
+                    <div class="auth-ink" id="authInk"></div>
+                </div>
+                <div class="auth-panel" id="panelSignIn">
+                    <h2 class="lc-head">Welcome <em>back.</em></h2>
+                    <div class="lc-field">
+                        <input class="lc-input" id="siUser" type="text" placeholder=" " autocomplete="username"
+                            maxlength="30" />
+                        <label class="lc-label">username</label>
+                        <div class="lc-bar"></div>
+                    </div>
+                    <div class="lc-field">
+                        <input class="lc-input" id="siPass" type="password" placeholder=" "
+                            autocomplete="current-password" style="padding-right:35px" />
+                        <label class="lc-label">password</label>
+                        <div class="lc-bar"></div>
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('siPass',this)" tabindex="-1">
+                            <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.5"
+                                fill="none">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="lc-btn-giant" id="loginBtn">
+                        <span class="lc-btn-col"><span class="lc-btn-label">SIGN IN</span></span>
+                        <svg class="lc-arrow-giant" viewBox="0 0 24 12" fill="none" width="24">
+                            <path d="M0 6H22M17 1l5 5-5 5" stroke="currentColor" stroke-width=".7" />
+                        </svg>
+                    </button>
+                    <button class="forgot-link" id="forgotLink">Forgot password?</button>
+                </div>
+                <div class="auth-panel hidden" id="panelCreate">
+                    <h2 class="lc-head">Create your<br><em>sanctuary.</em></h2>
+                    <div class="lc-field">
+                        <input class="lc-input" id="regUser" type="text" placeholder=" " autocomplete="username"
+                            maxlength="30" />
+                        <label class="lc-label">choose a username</label>
+                        <div class="lc-bar"></div>
+                    </div>
+                    <div class="lc-field">
+                        <input class="lc-input" id="regPass" type="password" placeholder=" " autocomplete="new-password"
+                            style="padding-right:35px" />
+                        <label class="lc-label">password</label>
+                        <div class="lc-bar"></div>
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('regPass',this)" tabindex="-1">
+                            <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.5"
+                                fill="none">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="lc-field">
+                        <input class="lc-input" id="regConf" type="password" placeholder=" " autocomplete="new-password"
+                            style="padding-right:35px" />
+                        <label class="lc-label">confirm password</label>
+                        <div class="lc-bar"></div>
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('regConf',this)" tabindex="-1">
+                            <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.5"
+                                fill="none">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="lc-btn-giant" id="registerBtn">
+                        <span class="lc-btn-col"><span class="lc-btn-label">CREATE ACCOUNT</span></span>
+                        <svg class="lc-arrow-giant" viewBox="0 0 24 12" fill="none" width="24">
+                            <path d="M0 6H22M17 1l5 5-5 5" stroke="currentColor" stroke-width=".7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- APP SHELL -->
+    <div class="app" id="appShell" style="display:none">
+        <canvas class="bg-stars" id="threeCanvas"></canvas>
+
+        <div class="marquee-strip" aria-hidden="true">
+            <div class="marquee-track">
+                <span>COGNITIVE CLARITY</span><span>&middot;</span><span>THOUGHT PATTERNS</span><span>&middot;</span>
+                <span>INNER DIALOGUE</span><span>&middot;</span><span>EMOTIONAL INTELLIGENCE</span><span>&middot;</span>
+                <span>REFRAME YOUR MIND</span><span>&middot;</span><span>NEURAL ARCHITECTURE</span><span>&middot;</span>
+                <span>COGNITIVE CLARITY</span><span>&middot;</span><span>THOUGHT PATTERNS</span><span>&middot;</span>
+                <span>INNER DIALOGUE</span><span>&middot;</span><span>EMOTIONAL INTELLIGENCE</span><span>&middot;</span>
+                <span>REFRAME YOUR MIND</span><span>&middot;</span><span>NEURAL ARCHITECTURE</span><span>&middot;</span>
+            </div>
+        </div>
+
+        <nav class="nav" id="siteNav">
+            <div class="nav-left"><span class="nav-mark">&#x2736;</span><span class="nav-name">COGNI</span></div>
+            <div class="nav-links">
+                <a href="#s-distortions" class="nl">Distortions</a>
+                <a href="#s-thoughts" class="nl">Thoughts</a>
+                <a href="#s-emotional" class="nl">Emotions</a>
+                <a href="#s-chat" class="nl">Analyze</a>
+                <a href="#s-meditation" class="nl">Meditate</a>
+                <a href="#s-dashboard" class="nl">Dashboard</a>
+                <a href="#s-crisis" class="nl">Support</a>
+            </div>
+            <div class="nav-right">
+                <button class="nav-theme-btn" id="navThemeBtn">&#x263D;</button>
+                <span class="nav-user" id="navUser"></span>
+                <button class="nav-profile-btn" id="navProfileBtn">&#x25C9;</button>
+                <button class="nav-logout" id="navLogout">&#x21A9;</button>
+            </div>
+        </nav>
+
+        <!-- HERO -->
+        <section class="hero" id="hero">
+            <div class="parallax-layer" id="parallaxLayer">
+                <div class="p-glow p-glow-1"></div>
+                <div class="p-glow p-glow-2"></div>
+                <div class="p-glow p-glow-3"></div>
+            </div>
+            <div class="hero-particles" id="heroParticles"></div>
+            <div class="hero-center" id="heroCenter">
+                <div class="hero-scramble reveal-split" id="heroScramble">COGNI</div>
+                <div class="hero-sub-line" id="heroSubLine">
+                    <div class="word-reveal"><span class="wr-inner">Understand</span></div>
+                    <div class="word-reveal"><span class="wr-inner hero-italic">your</span></div>
+                    <div class="word-reveal"><span class="wr-inner">thoughts.</span></div>
+                    <div class="word-reveal"><span class="wr-inner hero-italic">Rewrite</span></div>
+                    <div class="word-reveal"><span class="wr-inner">your</span></div>
+                    <div class="word-reveal"><span class="wr-inner hero-gold">dialogue.</span></div>
+                </div>
+                <div class="hero-actions" id="heroActions">
+                    <a href="#s-chat" class="cta-main"><span class="cta-text">Begin Analysis</span><span
+                            class="cta-arrow">&rarr;</span></a>
+                    <a href="#s-distortions" class="cta-ghost">Learn More</a>
+                </div>
+            </div>
+            <div class="scroll-hint">
+                <div class="scroll-track">
+                    <div class="scroll-fill"></div>
+                </div><span class="scroll-label">scroll</span>
+            </div>
+        </section>
+
+        <!-- THOUGHT VISUALIZER -->
+        <section class="section thought-viz-section" id="s-viz">
+            <div class="thought-viz-inner">
+                <span class="mono-tag reveal-up" style="display:block;margin-bottom:10px">Live Analysis</span>
+                <h2 class="section-display reveal-split" style="text-align:center;font-size:clamp(32px,5vw,64px)">Type a
+                    thought. Watch it <em style="font-style:italic;color:var(--gd)">unfold.</em></h2>
+                <div class="tv-input-wrap reveal-up">
+                    <input class="tv-input" id="thoughtVizInput" placeholder="What's weighing on your mind right now?"
+                        autocomplete="off" />
+                    <button class="tv-voice-btn" id="tvVoiceBtn" title="Voice input">&#x1F3A4;</button>
+                </div>
+                <div class="tv-canvas-wrap reveal-up"><canvas id="thoughtVizCanvas"></canvas></div>
+                <button class="tv-send reveal-up" id="tvSendBtn" style="margin-top:24px"><span>Send to Neural Analysis
+                        &rarr;</span></button>
+            </div>
+        </section>
+
+        <!-- COGNITIVE DISTORTIONS -->
+        <section class="section s-distortions" id="s-distortions">
+            <div class="section-inner">
+                <div class="section-label-row reveal-up"><span class="mono-tag">02 &mdash; Patterns</span>
+                    <div class="label-line"></div>
+                </div>
+                <h2 class="section-display reveal-split">Cognitive Distortions</h2>
+                <p class="section-sub reveal-up">These are the six most common patterns the mind uses to distort
+                    reality. Recognising them is the first act of healing.</p>
+                <div class="dist-grid">
+                    <div class="dist-card reveal-up tilt-card" style="--di:0;--dc:rgba(200,100,80,.07)">
+                        <div class="tilt-card-inner">
+                            <div class="dist-card-header">
+                                <div class="dist-num">01</div>
+                                <div class="dist-glyph">&#x25FC;&#x25FB;</div>
+                            </div>
+                            <h3 class="dist-title">All-or-Nothing</h3>
+                            <p class="dist-alt">Black &amp; White Thinking</p>
+                            <p class="dist-body">Seeing situations in extreme binary terms. If it isn&rsquo;t perfect,
+                                it&rsquo;s a complete failure &mdash; no middle ground.</p>
+                            <div class="dist-example"><span class="de-label">EXAMPLE</span>
+                                <p class="de-text">&ldquo;I made one mistake &mdash; I&rsquo;m completely
+                                    incompetent.&rdquo;</p>
+                            </div>
+                            <div class="dist-reframe"><span class="dr-label">REFRAME</span>
+                                <p class="dr-text">Most situations exist on a spectrum. One mistake doesn&rsquo;t define
+                                    your overall competence.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dist-card reveal-up tilt-card" style="--di:1;--dc:rgba(140,80,200,.07)">
+                        <div class="tilt-card-inner">
+                            <div class="dist-card-header">
+                                <div class="dist-num">02</div>
+                                <div class="dist-glyph">&#x221E;</div>
+                            </div>
+                            <h3 class="dist-title">Overgeneralization</h3>
+                            <p class="dist-alt">Always / Never Thinking</p>
+                            <p class="dist-body">Drawing sweeping conclusions from a single event. One negative
+                                experience becomes a permanent universal pattern.</p>
+                            <div class="dist-example"><span class="de-label">EXAMPLE</span>
+                                <p class="de-text">&ldquo;This always happens to me. I never get anything right.&rdquo;
+                                </p>
+                            </div>
+                            <div class="dist-reframe"><span class="dr-label">REFRAME</span>
+                                <p class="dr-text">This happened once. It doesn&rsquo;t define a permanent pattern about
+                                    your life.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dist-card reveal-up tilt-card" style="--di:2;--dc:rgba(200,80,80,.07)">
+                        <div class="tilt-card-inner">
+                            <div class="dist-card-header">
+                                <div class="dist-num">03</div>
+                                <div class="dist-glyph">&#x26A1;</div>
+                            </div>
+                            <h3 class="dist-title">Catastrophizing</h3>
+                            <p class="dist-alt">Worst-Case Thinking</p>
+                            <p class="dist-body">Expecting the worst possible outcome and exaggerating the significance
+                                of every problem or setback.</p>
+                            <div class="dist-example"><span class="de-label">EXAMPLE</span>
+                                <p class="de-text">&ldquo;If I fail this, my entire career will be ruined.&rdquo;</p>
+                            </div>
+                            <div class="dist-reframe"><span class="dr-label">REFRAME</span>
+                                <p class="dr-text">What&rsquo;s the realistic outcome? Most setbacks are recoverable.
+                                    You&rsquo;ve handled difficulty before.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dist-card reveal-up tilt-card" style="--di:3;--dc:rgba(80,120,200,.07)">
+                        <div class="tilt-card-inner">
+                            <div class="dist-card-header">
+                                <div class="dist-num">04</div>
+                                <div class="dist-glyph">&#x25CE;</div>
+                            </div>
+                            <h3 class="dist-title">Mind Reading</h3>
+                            <p class="dist-alt">Assuming Others&rsquo; Thoughts</p>
+                            <p class="dist-body">Believing you know what others are thinking &mdash; usually that
+                                they&rsquo;re judging or thinking negatively of you.</p>
+                            <div class="dist-example"><span class="de-label">EXAMPLE</span>
+                                <p class="de-text">&ldquo;They didn&rsquo;t reply &mdash; they must be angry with
+                                    me.&rdquo;</p>
+                            </div>
+                            <div class="dist-reframe"><span class="dr-label">REFRAME</span>
+                                <p class="dr-text">You cannot know what someone else is thinking. There are many
+                                    possible reasons for their behaviour.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dist-card reveal-up tilt-card" style="--di:4;--dc:rgba(200,160,80,.07)">
+                        <div class="tilt-card-inner">
+                            <div class="dist-card-header">
+                                <div class="dist-num">05</div>
+                                <div class="dist-glyph">&#x2297;</div>
+                            </div>
+                            <h3 class="dist-title">Should Statements</h3>
+                            <p class="dist-alt">Rigid Internal Rules</p>
+                            <p class="dist-body">Imposing rigid rules using &ldquo;should,&rdquo; &ldquo;must,&rdquo; or
+                                &ldquo;ought to.&rdquo; Violations create guilt or resentment that compounds.</p>
+                            <div class="dist-example"><span class="de-label">EXAMPLE</span>
+                                <p class="de-text">&ldquo;I should be further along. I must not feel this way.&rdquo;
+                                </p>
+                            </div>
+                            <div class="dist-reframe"><span class="dr-label">REFRAME</span>
+                                <p class="dr-text">Replace &ldquo;should&rdquo; with &ldquo;I would prefer.&rdquo;
+                                    Remove the judgment from the wish.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dist-card reveal-up tilt-card" style="--di:5;--dc:rgba(80,190,120,.07)">
+                        <div class="tilt-card-inner">
+                            <div class="dist-card-header">
+                                <div class="dist-num">06</div>
+                                <div class="dist-glyph">&#x2B21;</div>
+                            </div>
+                            <h3 class="dist-title">Labeling</h3>
+                            <p class="dist-alt">Identity-Based Judgment</p>
+                            <p class="dist-body">Attaching a global, negative identity label to yourself or others based
+                                on a single event or mistake.</p>
+                            <div class="dist-example"><span class="de-label">EXAMPLE</span>
+                                <p class="de-text">&ldquo;I forgot to reply &mdash; I&rsquo;m such a terrible
+                                    friend.&rdquo;</p>
+                            </div>
+                            <div class="dist-reframe"><span class="dr-label">REFRAME</span>
+                                <p class="dr-text">You made one mistake. That&rsquo;s an action, not an identity.
+                                    Actions can change. You are not a label.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- UNDERSTANDING THOUGHTS -->
+        <section class="section s-thoughts" id="s-thoughts">
+            <div class="section-inner">
+                <div class="section-label-row reveal-up"><span class="mono-tag">01 &mdash; Foundation</span>
+                    <div class="label-line"></div>
+                </div>
+                <h2 class="section-display reveal-split">Understanding Your Thoughts</h2>
+                <div class="thought-grid">
+                    <div class="tcard reveal-up tilt-card" style="--di:0">
+                        <div class="tilt-card-inner">
+                            <div class="tcard-num mono-sm">001</div>
+                            <div class="tcard-glyph">&#x25C8;</div>
+                            <h3 class="tcard-title">Automatic Thoughts</h3>
+                            <p class="tcard-body">Rapid, involuntary mental responses that arise without conscious
+                                effort, shaping perceptions instantly.</p>
+                            <div class="tcard-rule"></div>
+                        </div>
+                    </div>
+                    <div class="tcard reveal-up tilt-card" style="--di:1">
+                        <div class="tilt-card-inner">
+                            <div class="tcard-num mono-sm">002</div>
+                            <div class="tcard-glyph">&#x25CE;</div>
+                            <h3 class="tcard-title">Core Beliefs</h3>
+                            <p class="tcard-body">Deep-seated convictions formed through years of lived experience that
+                                act as a lens for reality.</p>
+                            <div class="tcard-rule"></div>
+                        </div>
+                    </div>
+                    <div class="tcard reveal-up tilt-card" style="--di:2">
+                        <div class="tilt-card-inner">
+                            <div class="tcard-num mono-sm">003</div>
+                            <div class="tcard-glyph">&#x25C9;</div>
+                            <h3 class="tcard-title">Thought Patterns</h3>
+                            <p class="tcard-body">Recurring mental loops that create predictable, often unhelpful
+                                emotional responses to life events.</p>
+                            <div class="tcard-rule"></div>
+                        </div>
+                    </div>
+                    <div class="tcard reveal-up tilt-card" style="--di:3">
+                        <div class="tilt-card-inner">
+                            <div class="tcard-num mono-sm">004</div>
+                            <div class="tcard-glyph">&#x2295;</div>
+                            <h3 class="tcard-title">Metacognition</h3>
+                            <p class="tcard-body">The capacity to observe your own thinking &mdash; watching thoughts
+                                arise without judgment or reactivity.</p>
+                            <div class="tcard-rule"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EMOTIONAL AWARENESS -->
+        <section class="section s-emotional" id="s-emotional">
+            <div class="section-inner">
+                <div class="section-label-row reveal-up"><span class="mono-tag">03 &mdash; Depth</span>
+                    <div class="label-line"></div>
+                </div>
+                <div class="emotional-split">
+                    <div class="em-left">
+                        <h2 class="section-display reveal-split">Emotional Awareness</h2>
+                        <p class="em-body reveal-up">Every emotion carries a message. Anxiety speaks of perceived
+                            threat. Sadness honours what matters deeply. Anger marks a boundary crossed.<br><br>Emotions
+                            are not obstacles to clarity &mdash; they are its doorway.</p>
+                        <div class="em-stats">
+                            <div class="em-stat reveal-up" style="--di:0"><span class="em-n"
+                                    data-target="87">0</span><span class="em-sym">%</span><span class="em-l">of thoughts
+                                    pass unexamined daily</span></div>
+                            <div class="em-stat reveal-up" style="--di:1"><span class="em-n"
+                                    data-target="3">0</span><span class="em-sym">s</span><span class="em-l">is all it
+                                    takes to pause and reflect</span></div>
+                        </div>
+                    </div>
+                    <div class="em-right reveal-scale">
+                        <div class="emotion-wheel" id="emotionWheel">
+                            <div class="wheel-center" id="wheelCenter"><span id="wheelText">Feel</span></div>
+                            <div class="wheel-petal vis" style="--a:0"><span>Joy</span></div>
+                            <div class="wheel-petal vis" style="--a:1"><span>Calm</span></div>
+                            <div class="wheel-petal vis" style="--a:2"><span>Trust</span></div>
+                            <div class="wheel-petal vis" style="--a:3"><span>Sadness</span></div>
+                            <div class="wheel-petal vis" style="--a:4"><span>Fear</span></div>
+                            <div class="wheel-petal vis" style="--a:5"><span>Anger</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DSA SECTION -->
+        <section class="section dsa-section" id="s-dsa">
+            <div class="section-inner">
+                <div class="section-label-row reveal-up"><span class="mono-tag">04 &mdash; Architecture</span>
+                    <div class="label-line"></div>
+                </div>
+                <h2 class="section-display reveal-split">How Your Mind Maps Itself</h2>
+                <p class="section-sub reveal-up">Your mind is not chaos &mdash; it is a navigable architecture waiting
+                    to be understood.</p>
+                <div class="dsa-grid">
+                    <!-- Linked List -->
+                    <div class="dsa-card reveal-left" style="--di:0">
+                        <div class="dsa-card-top"><span class="dsa-tag">Linked List</span>
+                            <h3>Thought History Nodes</h3>
+                        </div>
+                        <div class="ll-visual" id="llVisual">
+                            <div class="ll-node" data-ll="0">
+                                <div class="ll-node-inner"><span class="ll-label">Present</span>
+                                    <div class="ll-ptr">0x1A</div>
+                                </div>
+                            </div>
+                            <div class="ll-arrow" id="llArrow0"><svg viewBox="0 0 40 12" fill="none" width="36">
+                                    <path d="M0 6H34M28 1l6 5-6 5" stroke="currentColor" stroke-width="1" />
+                                </svg></div>
+                            <div class="ll-node" data-ll="1">
+                                <div class="ll-node-inner"><span class="ll-label">Yesterday</span>
+                                    <div class="ll-ptr">0x2B</div>
+                                </div>
+                            </div>
+                            <div class="ll-arrow" id="llArrow1"><svg viewBox="0 0 40 12" fill="none" width="36">
+                                    <path d="M0 6H34M28 1l6 5-6 5" stroke="currentColor" stroke-width="1" />
+                                </svg></div>
+                            <div class="ll-node" data-ll="2">
+                                <div class="ll-node-inner"><span class="ll-label">Last Week</span>
+                                    <div class="ll-ptr">0x3C</div>
+                                </div>
+                            </div>
+                            <div class="ll-arrow" id="llArrow2"><svg viewBox="0 0 40 12" fill="none" width="36">
+                                    <path d="M0 6H34M28 1l6 5-6 5" stroke="currentColor" stroke-width="1" />
+                                </svg></div>
+                            <div class="ll-node ll-null" data-ll="3">
+                                <div class="ll-node-inner"><span class="ll-label">&#x2205;</span>
+                                    <div class="ll-ptr">NULL</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ll-status" id="llStatus">Traversing... <span class="ll-status-node"></span></div>
+                        <p class="dsa-desc">Each memory is a node holding data and a pointer to the next &mdash;
+                            traversable, revisitable, releasable.</p>
+                    </div>
+                    <!-- Stack -->
+                    <div class="dsa-card reveal-right" style="--di:1">
+                        <div class="dsa-card-top"><span class="dsa-tag">Stack &middot; LIFO</span>
+                            <h3>Undo Thought Layers</h3>
+                        </div>
+                        <div class="stack-visual" id="stackVisual">
+                            <div class="stack-item top" data-d="0"><span class="stack-op">&larr; top</span><span
+                                    class="s-val">Reaction</span></div>
+                            <div class="stack-item" data-d="1"><span class="s-val">Interpretation</span></div>
+                            <div class="stack-item" data-d="2"><span class="s-val">Perception</span></div>
+                            <div class="stack-base"><span class="s-val">Triggering Event</span></div>
+                        </div>
+                        <div class="stack-btns">
+                            <button class="dsa-btn" id="stackPushBtn">PUSH &#x2191;</button>
+                            <button class="dsa-btn dsa-btn-active" id="popStackBtn">POP &#x2193;</button>
+                        </div>
+                        <p class="dsa-desc">Process thoughts in LIFO order &mdash; surface the most recent layer first,
+                            examine it, then release what lies beneath.</p>
+                    </div>
+                    <!-- Search -->
+                    <div class="dsa-card reveal-left" style="--di:2">
+                        <div class="dsa-card-top"><span class="dsa-tag">Search Algorithm</span>
+                            <h3>Pattern Recognition</h3>
+                        </div>
+                        <div class="search-visual">
+                            <div class="search-sentence" id="searchSentence">
+                                <span class="sw" data-type="neu">I</span><span class="sw" data-type="neg">always</span>
+                                <span class="sw" data-type="neg">fail</span><span class="sw" data-type="neu">at</span>
+                                <span class="sw" data-type="neg">everything</span><span class="sw"
+                                    data-type="neu">I</span><span class="sw" data-type="neu">try</span>
+                            </div>
+                            <div class="search-pointer" id="searchPointer">
+                                <div class="sp-arrow">&#x2191;</div>
+                                <div class="sp-label" id="spLabel">scanning...</div>
+                            </div>
+                            <div class="search-result" id="searchResult" style="display:none"><span
+                                    class="sr-icon">&#x2691;</span><span id="searchResultText">Overgeneralization
+                                    detected</span></div>
+                            <div class="search-legend"><span class="sl-item sl-neg">distortion</span><span
+                                    class="sl-item sl-neu">neutral</span></div>
+                        </div>
+                        <div class="search-controls">
+                            <button class="dsa-btn dsa-btn-active" id="searchRestartBtn">&#x21BA; RE-SCAN</button>
+                            <div style="display:flex;align-items:center;gap:7px"><span class="mono-sm"
+                                    style="font-size:8px">SPEED</span><input type="range" id="searchSpeed" min="1"
+                                    max="5" value="3" style="width:55px;accent-color:var(--gd)" /></div>
+                        </div>
+                        <p class="dsa-desc">Linear scanning identifies cognitive distortion signatures &mdash; each word
+                            a potential signal to examine.</p>
+                    </div>
+                    <!-- Sort -->
+                    <div class="dsa-card reveal-right" style="--di:3">
+                        <div class="dsa-card-top"><span class="dsa-tag">Sort Algorithm</span>
+                            <h3>Distortion Frequency</h3>
+                        </div>
+                        <div class="sort-visual" id="sortVisual">
+                            <div class="sort-compare" id="sortCompare" style="display:none"><span class="sc-a"
+                                    id="scA"></span><span class="sc-op">vs</span><span class="sc-b" id="scB"></span>
+                            </div>
+                            <div class="sort-bars" id="sortBars"></div>
+                        </div>
+                        <div class="sort-controls">
+                            <button class="dsa-btn dsa-btn-active" id="sortRunBtn">&#x25B6; BUBBLE SORT</button>
+                            <button class="dsa-btn" id="sortShuffleBtn">&#x21C4; SHUFFLE</button>
+                            <span class="sort-pass-label">Pass <span id="sortPass">0</span></span>
+                        </div>
+                        <p class="dsa-desc">Sorting distortions by frequency reveals your dominant cognitive patterns
+                            &mdash; your personal mental signature.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CHAT -->
+        <section class="section s-chat" id="s-chat">
+            <div class="section-inner">
+                <div class="section-label-row reveal-up"><span class="mono-tag">05 &mdash; Intelligence</span>
+                    <div class="label-line"></div>
+                </div>
+                <h2 class="section-display reveal-split">Neural Analysis</h2>
+                <p class="section-sub reveal-up">Share a thought weighing on you. The AI will identify the cognitive
+                    distortion, validate your feelings, and reframe it with clarity.</p>
+                <div class="chat-shell reveal-up">
+                    <div class="chat-hdr">
+                        <div class="chat-status-row"><span class="status-dot"></span><span class="mono-sm">COGNI ENGINE
+                                ONLINE</span></div>
+                        <div class="chat-hdr-actions">
+                            <button class="chb" id="chatVoiceBtn" title="Voice input">&#x1F3A4;</button>
+                            <button class="chb" id="chatClear" title="Clear chat">&#x2298;</button>
+                        </div>
+                    </div>
+                    <div class="chat-msgs" id="chatMessages">
+                        <div class="cm cm-sys">
+                            <div class="cm-avatar"><span>&#x2736;</span></div>
+                            <div class="cm-bubble cm-sys-bubble">
+                                <p class="cm-body" style="opacity:1">Welcome. Share any thought weighing on you right
+                                    now. I will help you find clarity.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-row">
+                        <textarea id="chatInput" class="chat-ta" placeholder="Type your thought or press the mic..."
+                            rows="1"></textarea>
+                        <button class="send-btn" id="chatSend">&#x2191;</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MEDITATION -->
+        <section class="section s-meditation" id="s-meditation">
+            <div class="section-inner">
+                <div class="section-label-row reveal-up"><span class="mono-tag">06 &mdash; Stillness</span>
+                    <div class="label-line"></div>
+                </div>
+                <h2 class="section-display reveal-split">Guided Meditation</h2>
+                <p class="section-sub reveal-up">Select a duration and ambient sound. Let go of everything that is not
+                    this moment.</p>
+                <div class="med-shell reveal-up">
+                    <div class="med-left">
+                        <div><span class="mono-tag" style="display:block;margin-bottom:12px">Duration</span>
+                            <div class="med-dur-row">
+                                <button class="med-dur-btn active" data-min="5">5 min</button>
+                                <button class="med-dur-btn" data-min="10">10 min</button>
+                                <button class="med-dur-btn" data-min="15">15 min</button>
+                                <button class="med-dur-btn" data-min="20">20 min</button>
+                            </div>
+                        </div>
+                        <div class="med-sounds">
+                            <span class="mono-tag" style="display:block;margin-bottom:12px">Ambient Sound</span>
+                            <div class="med-sound-grid">
+                                <button class="med-sound-btn active" data-sound="silence"><span
+                                        class="msb-icon">&#x25CB;</span><span class="msb-label">Silence</span></button>
+                                <button class="med-sound-btn" data-sound="rain"><span
+                                        class="msb-icon">&#x1F327;</span><span class="msb-label">Rain</span></button>
+                                <button class="med-sound-btn" data-sound="ocean"><span
+                                        class="msb-icon">&#x1F30A;</span><span class="msb-label">Ocean</span></button>
+                                <button class="med-sound-btn" data-sound="forest"><span
+                                        class="msb-icon">&#x1F33F;</span><span class="msb-label">Forest</span></button>
+                                <button class="med-sound-btn" data-sound="bowl"><span
+                                        class="msb-icon">&#x25CE;</span><span class="msb-label">Singing
+                                        Bowl</span></button>
+                                <button class="med-sound-btn" data-sound="white"><span
+                                        class="msb-icon">&#x223F;</span><span class="msb-label">White
+                                        Noise</span></button>
+                            </div>
+                        </div>
+                        <button class="bs-btn" id="medAiSuggestBtn"
+                            style="margin-top:22px;padding:9px 18px;font-size:9px"><span>&#x2728; AI Suggest Based on
+                                Mood</span></button>
+                        <div class="med-ai-suggestion" id="medAiSuggestion" style="display:none"></div>
+                    </div>
+                    <div class="med-right">
+                        <div class="med-orb-wrap"><canvas class="med-canvas" id="medCanvas"></canvas>
+                            <div class="med-orb">
+                                <div class="med-time" id="medTime">05:00</div>
+                                <div class="med-phase" id="medPhase">Ready</div>
+                            </div>
+                        </div>
+                        <div class="med-controls">
+                            <button class="med-start-btn" id="medStartBtn">&#x25B6; Begin</button>
+                            <button class="med-stop-btn" id="medStopBtn" style="display:none">&#x25A0; End</button>
+                        </div>
+                        <p class="med-guidance" id="medGuidance">Find a comfortable position. Let your eyes close
+                            gently.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BREATHING -->
+        <section class="section s-breathing" id="s-breathing">
+            <div class="section-inner">
+                <div class="breath-section-grid">
+                    <div class="bs-text">
+                        <div class="section-label-row reveal-up"><span class="mono-tag">07 &mdash; Reset</span>
+                            <div class="label-line"></div>
+                        </div>
+                        <h2 class="section-display reveal-split">Ground Yourself</h2>
+                        <p class="bs-desc reveal-up">Box breathing regulates your nervous system in minutes. Four
+                            seconds each: inhale, hold, exhale, hold.</p>
+                        <button class="bs-btn reveal-up" id="breathSectionBtn"><span>START BREATHING
+                                &rarr;</span></button>
+                    </div>
+                    <div class="bs-visual reveal-scale">
+                        <div class="bs-orb">
+                            <div class="bs-ring r1"></div>
+                            <div class="bs-ring r2"></div>
+                            <div class="bs-ring r3"></div>
+                            <span class="bs-core">4&middot;4&middot;4&middot;4</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD -->
+        <section class="section s-dashboard" id="s-dashboard">
+            <div class="section-inner">
+                <div class="section-label-row reveal-up"><span class="mono-tag">08 &mdash; Insight</span>
+                    <div class="label-line"></div>
+                </div>
+                <h2 class="section-display reveal-split">Your Statistics</h2>
+                <div class="dash-stats reveal-up">
+                    <div class="dstat"><span class="dstat-n" id="totalSessions">0</span><span class="dstat-l">Total
+                            Analyses</span></div>
+                    <div class="dstat-div"></div>
+                    <div class="dstat"><span class="dstat-n" id="topDistortion"
+                            style="font-size:clamp(11px,1.5vw,18px);line-height:1.9">&mdash;</span><span
+                            class="dstat-l">Primary Distortion</span></div>
+                    <div class="dstat-div"></div>
+                    <div class="dstat"><span class="dstat-n" id="streakCount">0</span><span class="dstat-l">Day
+                            Streak</span></div>
+                    <div class="dstat-div"></div>
+                    <div class="dstat"><span class="dstat-n" id="avgMoodStat">&mdash;</span><span class="dstat-l">Avg
+                            Mood (7d)</span></div>
+                </div>
+                <div class="mood-chart-wrap reveal-up" style="margin-top:24px">
+                    <div class="moodchart-header">
+                        <span class="mono-tag">Mood Trend &mdash; Last 14 Days</span>
+                        <button class="bs-btn" id="weeklySummaryBtn"
+                            style="padding:8px 16px;font-size:8px"><span>&#x2736; AI Weekly Summary</span></button>
+                    </div>
+                    <canvas class="mood-chart" id="moodChart" height="160"></canvas>
+                    <div class="weekly-summary-box" id="weeklySummaryBox" style="display:none"></div>
+                </div>
+                <div class="dist-freq-wrap reveal-up" style="margin-top:18px">
+                    <span class="mono-tag" style="display:block;margin-bottom:18px">Distortion Frequency</span>
+                    <div class="dist-freq-bars" id="distFreqBars"></div>
+                </div>
+                <div class="dash-lower reveal-up">
+                    <div class="habit-panel">
+                        <div class="habit-header"><span class="mono-tag">Daily Habits</span><span class="habit-date"
+                                id="habitDate"></span></div>
+                        <div class="habit-grid" id="habitGrid">
+                            <div class="habit-item" data-habit="sleep"><button class="habit-check" id="hSleep"><span
+                                        class="hc-icon">&#x1F4A4;</span></button>
+                                <div class="habit-info"><span class="habit-name">Sleep 7+ hours</span><span
+                                        class="habit-streak" id="hSleepStreak">Not started</span></div>
+                            </div>
+                            <div class="habit-item" data-habit="water"><button class="habit-check" id="hWater"><span
+                                        class="hc-icon">&#x1F4A7;</span></button>
+                                <div class="habit-info"><span class="habit-name">Drink 8 glasses</span><span
+                                        class="habit-streak" id="hWaterStreak">Not started</span></div>
+                            </div>
+                            <div class="habit-item" data-habit="exercise"><button class="habit-check"
+                                    id="hExercise"><span class="hc-icon">&#x1F3C3;</span></button>
+                                <div class="habit-info"><span class="habit-name">Move your body</span><span
+                                        class="habit-streak" id="hExerciseStreak">Not started</span></div>
+                            </div>
+                            <div class="habit-item" data-habit="mindfulness"><button class="habit-check"
+                                    id="hMindfulness"><span class="hc-icon">&#x1F9D8;</span></button>
+                                <div class="habit-info"><span class="habit-name">Mindfulness practice</span><span
+                                        class="habit-streak" id="hMindfulnessStreak">Not started</span></div>
+                            </div>
+                            <div class="habit-item" data-habit="journal"><button class="habit-check" id="hJournal"><span
+                                        class="hc-icon">&#x1F4D3;</span></button>
+                                <div class="habit-info"><span class="habit-name">Journal entry</span><span
+                                        class="habit-streak" id="hJournalStreak">Not started</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="journal-panel">
+                        <div class="j-write">
+                            <div class="j-mood-row">
+                                <span class="j-mood-label">Today&rsquo;s mood</span>
+                                <div class="j-moods" id="moodOptions">
+                                    <button class="mood-btn" data-mood="1">&#x1F614;</button><button class="mood-btn"
+                                        data-mood="2">&#x1F61F;</button>
+                                    <button class="mood-btn active" data-mood="3">&#x1F610;</button><button
+                                        class="mood-btn" data-mood="4">&#x1F642;</button>
+                                    <button class="mood-btn" data-mood="5">&#x1F60A;</button>
+                                </div>
+                            </div>
+                            <textarea id="journalInput" class="j-ta"
+                                placeholder="Write freely, without judgment..."></textarea>
+                            <div class="j-footer">
+                                <button class="j-save" id="journalSave">Save Entry</button>
+                                <button class="bs-btn" id="generateInsightBtn"
+                                    style="padding:8px 14px;font-size:8px;border-color:rgba(175,160,137,.18)"><span>&#x2728;
+                                        AI Insight</span></button>
+                            </div>
+                        </div>
+                        <div class="j-entries">
+                            <div class="j-ehead"><span class="mono-sm">Past Entries (<span
+                                        id="entriesCount">0</span>)</span></div>
+                            <div id="aiInsightBox" class="ai-insight-box" style="display:none"></div>
+                            <div class="j-elist" id="journalEntries">
+                                <p class="j-empty">Your first entry awaits.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CRISIS -->
+        <section class="section s-crisis" id="s-crisis">
+            <div class="section-inner">
+                <div class="section-label-row reveal-up"><span class="mono-tag">09 &mdash; Support</span>
+                    <div class="label-line"></div>
+                </div>
+                <h2 class="section-display reveal-split">You Are Not Alone</h2>
+                <p class="section-sub reveal-up">Real human support is available right now. These services are free,
+                    confidential, and available 24/7.</p>
+                <div class="crisis-grid reveal-up">
+                    <div class="crisis-card">
+                        <div class="crisis-icon">&#x1F198;</div>
+                        <h3 class="crisis-title">International Lifeline Directory</h3>
+                        <p class="crisis-region">Worldwide</p><a class="crisis-link"
+                            href="https://www.iasp.info/resources/Crisis_Centres/" target="_blank" rel="noopener">Find
+                            your local lifeline &rarr;</a>
+                    </div>
+                    <div class="crisis-card">
+                        <div class="crisis-icon">&#x1F4AC;</div>
+                        <h3 class="crisis-title">Crisis Text Line</h3>
+                        <p class="crisis-region">India</p>
+                        <p class="crisis-num">Text HOME to <strong>To Your Parents</strong></p>
+                        <p class="crisis-sub">The Real Human Supporters</p>
+                    </div>
+                    <div class="crisis-card">
+                        <div class="crisis-icon">&#x1F4DE;</div>
+                        <h3 class="crisis-title">Suicide &amp; Crisis Lifeline</h3>
+                        <p class="crisis-region">India</p>
+                        <p class="crisis-num">Call or text <strong>Your MOM</strong></p>
+                        <p class="crisis-sub">Available 24/7 Everytime for you</p>
+                    </div>
+                    <div class="crisis-card">
+                        <div class="crisis-icon">&#x1F30F;</div>
+                        <h3 class="crisis-title">iCall Mental Health</h3>
+                        <p class="crisis-region">India</p>
+                        <p class="crisis-num">Call <strong>9152987821</strong></p>
+                        <p class="crisis-sub">Mon&ndash;Sat, 8am&ndash;10pm IST</p>
+                    </div>
+                    <div class="crisis-card">
+                        <div class="crisis-icon">&#x1F91D;</div>
+                        <h3 class="crisis-title">Samaritans</h3>
+                        <p class="crisis-region">India</p>
+                        <p class="crisis-num">Call <strong>Your Friend</strong></p>
+                        <p class="crisis-sub">Free, confidential, 24 hours a day</p>
+                    </div>
+                    <div class="crisis-card crisis-card-note">
+                        <div class="crisis-icon">&#x2736;</div>
+                        <h3 class="crisis-title">A Note from COGNI</h3>
+                        <p class="crisis-body">COGNI is a tool for self-reflection and learning. It is not a substitute
+                            for professional mental health care. If you are in crisis, please reach out to a trained
+                            professional immediately. You deserve real human support.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="site-footer">
+            <div class="footer-inner section-inner">
+                <div class="footer-brand"><span class="lc-mark">&#x2736;</span><span class="lc-name">COGNI</span></div>
+                <p class="footer-tag">Designed for peace of mind &middot; 2026</p>
+                <div class="footer-rule"></div>
+                <p class="footer-note">Not a substitute for professional mental health care. &middot; <a
+                        href="#s-crisis"
+                        style="color:var(--crd);text-decoration:none;border-bottom:1px solid rgba(139,139,139,.25)">Crisis
+                        Resources</a></p>
+            </div>
+        </footer>
+
+    </div><!-- /appShell -->
+    <script src="script.js"></script>
+</body>
+
+</html>
